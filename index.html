@@ -1,112 +1,1032 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Java Build Tools – Maven, Gradle & Dependency Analysis</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="PkLa_ViOo6FAHpvh8SacceMb95o9tePRdrqLNBz9X1M" />
+<meta name="robots" content="index, follow">
 
-  <!-- Google verification -->
-  <meta name="google-site-verification" content="PkLa_ViOo6FAHpvh8SacceMb95o9tePRdrqLNBz9X1M" />
+<title>Analyze Gradle – Free Gradle Build Analyzer, Dependency Checker &amp; build.gradle Parser</title>
 
-  <!-- SEO -->
-  <meta name="description" content="Java build tools for analyzing Maven and Gradle builds, dependency conflicts, build time performance, and JAR size optimization.">
-  <meta name="keywords" content="java build tools, maven dependency analyzer, gradle build performance, jar size analyzer java, dependency conflict checker java, java build time profiler">
+<meta name="description" content="Free Gradle analyzer. Paste build.gradle or build.gradle.kts to analyze dependencies, detect deprecated configurations, find duplicate artifacts, check for SNAPSHOT versions, and get Gradle best practice recommendations.">
 
-  <!-- AdSense -->
-  <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX">
+<meta name="keywords" content="analyze gradle, gradle analyzer, gradle build analyzer, gradle dependency analyzer, build.gradle analyzer, gradle dependency checker, gradle best practices, gradle compile vs implementation, gradle dependency analysis, gradle build analysis tool">
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Java Build Tools – Maven & Gradle Optimization">
-  <meta property="og:description" content="Analyze Java builds, dependencies, conflicts, and performance in Maven and Gradle projects.">
-  <meta property="og:type" content="website">
+<link rel="canonical" href="https://franrivalbigprojects.github.io/java-build-tools/">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #020617;
-      color: #e2e8f0;
-      margin: 0;
-      padding: 40px;
-    }
-    h1 {
-      color: #f59e0b;
-    }
-    p {
-      max-width: 900px;
-      line-height: 1.6;
-    }
-    .tools {
-      margin-top: 30px;
-    }
-    .tool {
-      background: #1e293b;
-      padding: 14px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      transition: 0.2s;
-    }
-    .tool:hover {
-      background: #334155;
-    }
-    a {
-      color: #22c55e;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+<meta property="og:title" content="Analyze Gradle – Free build.gradle Analyzer and Dependency Checker">
+<meta property="og:description" content="Paste build.gradle to analyze dependencies, detect deprecated configs, find duplicates, and get Gradle best practice recommendations. Free tool.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #050a06;
+  --surface: #08120a;
+  --surface2: #0d1a10;
+  --border: #12201a;
+  --border2: #183025;
+  --gr: #02b875;
+  --gr-dim: rgba(2,184,117,0.12);
+  --gr-dim2: rgba(2,184,117,0.05);
+  --gr-glow: rgba(2,184,117,0.18);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.1);
+  --orange: #fb923c;
+  --orange-dim: rgba(251,146,60,0.08);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.08);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.08);
+  --text: #b0d8c8;
+  --text-muted: #3a6050;
+  --text-dim: #0f2820;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', sans-serif;
+  --r: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+header {
+  border-bottom: 1px solid var(--border2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(5,10,6,0.97);
+  backdrop-filter: blur(12px);
+}
+
+.header-inner {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-pill {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gr);
+  background: var(--gr-dim2);
+  border: 1px solid rgba(2,184,117,0.3);
+  border-radius: 3px;
+  padding: 3px 9px;
+}
+
+.logo-text { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+.logo-text strong { color: var(--gr); font-weight: 500; }
+
+.wrapper {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  padding: 48px 0 28px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 22px;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gr);
+  margin-bottom: 12px;
+  opacity: 0.8;
+}
+
+h1 {
+  font-size: clamp(22px, 3.2vw, 30px);
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 em { font-style: normal; color: var(--gr); }
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--text-muted);
+  max-width: 620px;
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+
+.hero-sub strong { color: var(--text); }
+
+.pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.pill-g  { color: var(--gr); background: var(--gr-dim2); border-color: rgba(2,184,117,0.3); }
+.pill-dim { color: var(--text-muted); border-color: var(--border2); }
+
+/* TOOL */
+.tool-shell {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.tool-topbar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border2);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topbar-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.btn-sm {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid;
+  background: transparent;
+  transition: opacity 0.15s;
+}
+.btn-sm:hover { opacity: 0.75; }
+.btn-gr   { color: var(--gr); border-color: rgba(2,184,117,0.3); background: var(--gr-dim2); }
+.btn-ghost { color: var(--text-muted); border-color: var(--border2); }
+
+/* SPLIT */
+.editor-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 360px;
+}
+
+.pane-left {
+  border-right: 1px solid var(--border2);
+  display: flex;
+  flex-direction: column;
+}
+
+.pane-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-dim);
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface2);
+  display: flex;
+  justify-content: space-between;
+}
+
+.gradle-textarea {
+  flex: 1;
+  width: 100%;
+  min-height: 310px;
+  padding: 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.65;
+  background: var(--bg);
+  border: none;
+  color: var(--text);
+  resize: none;
+  tab-size: 4;
+}
+.gradle-textarea:focus { outline: none; }
+
+.pane-right {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#resultsPane {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  min-height: 310px;
+}
+
+.idle-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 280px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  gap: 8px;
+}
+
+.action-bar {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border2);
+  background: var(--surface2);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-analyze {
+  padding: 10px 26px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--gr);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 14px var(--gr-glow);
+  transition: opacity 0.15s;
+}
+.btn-analyze:hover { opacity: 0.87; }
+
+/* RESULTS */
+.sum-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.sum-chip {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 6px 10px;
+  text-align: center;
+  min-width: 54px;
+}
+
+.sc-val { font-family: var(--mono); font-size: 16px; font-weight: 600; line-height: 1; display: block; margin-bottom: 2px; }
+.sc-lbl { font-family: var(--mono); font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em; }
+
+/* FINDINGS */
+.finding {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-left: 3px solid;
+  border-radius: 0 var(--r) var(--r) 0;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.f-error   { border-left-color: var(--red); }
+.f-warning { border-left-color: var(--yellow); }
+.f-info    { border-left-color: var(--blue); }
+.f-pass    { border-left-color: var(--gr); }
+
+.f-head { display: flex; align-items: center; gap: 7px; margin-bottom: 2px; }
+.f-badge {
+  font-size: 9px; padding: 1px 6px; border-radius: 2px; border: 1px solid;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.fb-error   { color: var(--red);    background: var(--red-dim);   border-color: rgba(248,113,113,0.2); }
+.fb-warning { color: var(--yellow); background: var(--yellow-dim);border-color: rgba(251,191,36,0.2); }
+.fb-info    { color: var(--blue);   background: var(--blue-dim);  border-color: rgba(96,165,250,0.2); }
+.fb-pass    { color: var(--gr);     background: var(--gr-dim2);   border-color: rgba(2,184,117,0.2); }
+
+.f-title { font-weight: 600; color: var(--text); font-size: 11px; }
+.f-body  { color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+
+/* DEP TABLE */
+.dep-group { margin-bottom: 12px; }
+
+.dg-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gr);
+  opacity: 0.8;
+  margin-bottom: 5px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.dep-item {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.dep-item:last-child { border-bottom: none; }
+.dep-group-name { color: var(--gr); min-width: 160px; }
+.dep-artifact   { color: var(--text); flex: 1; }
+.dep-version    { color: var(--text-muted); min-width: 80px; text-align: right; }
+.dep-snap       { color: var(--yellow); }
+.dep-latest     { color: var(--blue); }
+
+/* SECTION */
+hr.divider { border: none; border-top: 1px solid var(--border2); margin: 50px 0; }
+.content-section { margin-bottom: 50px; }
+
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.sec-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gr);
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+.sec-rule { flex: 1; height: 1px; background: var(--border2); }
+
+p { font-size: 14px; color: var(--text-muted); line-height: 1.8; margin-bottom: 10px; max-width: 820px; }
+p strong { color: var(--text); }
+
+code {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--surface2);
+  color: var(--gr);
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid var(--border2);
+}
+
+.code-block {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--gr);
+  border-radius: 5px;
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 12px 0;
+  color: var(--text-muted);
+}
+
+.ck { color: var(--gr); }
+.cm { color: var(--text-dim); }
+.cs { color: var(--yellow); }
+
+.dense-block {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 22px;
+  margin-top: 14px;
+}
+
+.dense-block p { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border2); max-width: none; }
+.dense-block p:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+.faq-list {
+  margin-top: 14px;
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.faq-item { border-bottom: 1px solid var(--border2); }
+.faq-item:last-child { border-bottom: none; }
+
+.faq-q {
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: none;
+  padding: 13px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  font-family: var(--sans);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  transition: background 0.15s;
+}
+
+.faq-q:hover { background: var(--gr-dim2); }
+.faq-arrow { font-family: var(--mono); font-size: 11px; color: var(--text-dim); transition: transform 0.2s; flex-shrink: 0; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+.faq-a {
+  display: none;
+  padding: 0 18px 13px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.75;
+  border-top: 1px solid var(--border2);
+  background: var(--bg);
+}
+
+.faq-item.open .faq-a { display: block; }
+.faq-a code { color: var(--gr); background: var(--gr-dim2); }
+
+.subtools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stl {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  text-decoration: none;
+  display: block;
+  transition: border-color 0.15s;
+}
+
+.stl:hover { border-color: rgba(2,184,117,0.3); }
+.stl-eye  { font-family: var(--mono); font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+.stl-name { font-family: var(--mono); font-size: 12px; color: var(--gr); font-weight: 500; }
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 50px; }
+.tag {
+  font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 100px; padding: 4px 12px; cursor: default;
+}
+.tag:hover { color: var(--gr); border-color: rgba(2,184,117,0.3); }
+
+footer { border-top: 1px solid var(--border2); padding: 20px 0; position: relative; z-index: 1; }
+.footer-inner {
+  max-width: 1060px; margin: 0 auto; padding: 0 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px;
+}
+footer p { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin: 0; }
+
+@media (max-width: 640px) {
+  .editor-split { grid-template-columns: 1fr; }
+  .pane-left    { border-right: none; border-bottom: 1px solid var(--border2); }
+}
+</style>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Gradle Build Analyzer","applicationCategory":"DeveloperApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free Gradle build analyzer. Paste build.gradle or build.gradle.kts to analyze dependencies, detect deprecated configurations (compile, testCompile), find SNAPSHOT dependencies, identify duplicate artifacts, and get Gradle best practice recommendations.","featureList":"Dependency grouping by configuration, deprecated config detection, SNAPSHOT version detection, api vs implementation analysis, duplicate artifact detection, Gradle CLI commands"}
+</script>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I analyze Gradle dependencies?","acceptedAnswer":{"@type":"Answer","text":"Several methods to analyze Gradle dependencies: (1) ./gradlew dependencies — prints the full dependency tree with resolved versions and conflict resolutions. (2) ./gradlew dependencies --configuration runtimeClasspath — analyzes a specific configuration. (3) ./gradlew build --scan — generates a Gradle Build Scan with visual dependency analysis (requires Gradle Enterprise account). (4) The ca.cutterslade.analyze plugin — analyzes declared vs used dependencies and flags unused or undeclared ones. (5) This online analyzer — paste your build.gradle to detect common issues without running Gradle."}},{"@type":"Question","name":"What is the difference between api and implementation in Gradle?","acceptedAnswer":{"@type":"Answer","text":"In Gradle's Java Library plugin: implementation means the dependency is internal to the module — consumers of your library cannot see it. This is the correct default for most dependencies and enables compile-time isolation. api means the dependency is part of your public API — consumers can use classes from this dependency in their code. Use api sparingly — it causes downstream recompilation whenever the dependency changes. Most projects over-use api when implementation is correct. Use api only when your public interfaces directly expose types from the dependency."}}]}
+</script>
+
 </head>
+
 <body>
+<header>
+  <div class="header-inner">
+    <span class="logo-pill">Gradle</span>
+    <span class="logo-text"><strong>analyze</strong>-gradle-build</span>
+  </div>
+</header>
 
-  <h1>Java Build Tools</h1>
+<div class="wrapper">
 
-  <p>
-    A collection of tools for analyzing Java build systems using Maven and Gradle.
-    Identify dependency conflicts, optimize build performance, and reduce JAR size
-    in large-scale Java projects.
-  </p>
+  <section class="hero">
+    <p class="hero-eyebrow">// Java Build Analysis</p>
+    <h1>Free <em>Analyze Gradle</em> Tool —<br>build.gradle Analyzer &amp; Dependency Checker</h1>
+    <p class="hero-sub">
+      Paste <strong>build.gradle or build.gradle.kts</strong> to analyze dependencies by configuration, detect deprecated configurations, find SNAPSHOT versions, and get Gradle best practice recommendations.
+    </p>
+    <div class="pill-row">
+      <span class="pill pill-g">implementation</span>
+      <span class="pill pill-g">api vs impl</span>
+      <span class="pill pill-dim">SNAPSHOT detection</span>
+      <span class="pill pill-dim">Deprecated configs</span>
+      <span class="pill pill-dim">Groovy + Kotlin DSL</span>
+    </div>
+  </section>
 
-  <p>
-    These tools help developers improve build efficiency, debug dependency issues,
-    and maintain clean and optimized build pipelines.
-  </p>
+  <!-- TOOL -->
 
-  <div class="tools">
+  <div class="tool-shell">
+    <div class="tool-topbar">
+      <span class="topbar-label">// Gradle Build Analyzer</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-sm btn-gr" id="sampleBtn">Load Sample</button>
+        <button class="btn-sm btn-ghost" id="clearBtn">Clear</button>
+      </div>
+    </div>
 
-    <div class="tool"><a href="./java_build_time_profiler/">Build Time Profiler</a></div>
-    <div class="tool"><a href="./java_dependency_conflict_checker/">Dependency Conflict Checker</a></div>
-    <div class="tool"><a href="./java_gradle_build_visualizer/">Gradle Build Visualizer</a></div>
-    <div class="tool"><a href="./java_jar_size_analyzer/">JAR Size Analyzer</a></div>
-    <div class="tool"><a href="./java_maven_dependency_analyzer/">Maven Dependency Analyzer</a></div>
+
+<div class="editor-split">
+  <div class="pane-left">
+    <div class="pane-head">
+      <span>// Paste build.gradle or build.gradle.kts</span>
+      <span id="lineCount">0 lines</span>
+    </div>
+    <textarea class="gradle-textarea" id="gradleInput" spellcheck="false"></textarea>
+  </div>
+  <div class="pane-right">
+    <div class="pane-head"><span>// Analysis results</span></div>
+    <div id="resultsPane">
+      <div class="idle-msg">
+        <span style="font-size:28px;opacity:0.1;">&#9670;</span>
+        <span>Paste build.gradle and click<br>Analyze Gradle Build</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="action-bar">
+  <button class="btn-analyze" id="analyzeBtn">Analyze Gradle Build</button>
+  <button class="btn-sm btn-ghost" id="clearBtn2">Reset</button>
+  <span id="statusMsg" style="font-family:var(--mono);font-size:11px;color:var(--text-dim);"></span>
+</div>
+
 
   </div>
 
-  <!-- SEO LONG TAIL -->
-  <h2>Common Java Build & Dependency Queries</h2>
+  <hr class="divider">
 
-  <ul>
-    <li>how to fix maven dependency conflicts step by step</li>
-    <li>gradle build slow performance optimization</li>
-    <li>how to reduce jar file size in java project</li>
-    <li>analyze java build time bottlenecks maven gradle</li>
-    <li>dependency tree issues java build fix</li>
-    <li>gradle vs maven performance comparison</li>
-    <li>how to visualize dependencies in java projects</li>
-  </ul>
+  <!-- COMMANDS -->
 
-  <p>
-    These tools are ideal for backend engineers working on large Java codebases,
-    microservices, and enterprise applications.
-  </p>
+  <section class="content-section">
+    <div class="sec-head">
+      <span class="sec-label">Gradle analysis commands</span>
+      <span class="sec-rule"></span>
+    </div>
 
-  <!-- snippet SEO -->
-  <pre>
-mvn dependency:tree
 
-./gradlew build --scan
-  </pre>
+<div class="code-block"><span class="cm"># ─── Dependency tree ───</span>
+
+<span class="ck">./gradlew</span> dependencies
+<span class="ck">./gradlew</span> dependencies <span class="cs">–configuration runtimeClasspath</span>
+<span class="ck">./gradlew</span> :module:dependencies <span class="cs">–configuration compileClasspath</span>
+
+<span class="cm"># ─── Dependency insight (why is X included?) ───</span>
+<span class="ck">./gradlew</span> dependencyInsight <span class="cs">–dependency com.google.guava:guava</span>
+<span class="ck">./gradlew</span> dependencyInsight <span class="cs">–dependency slf4j-api –configuration runtimeClasspath</span>
+
+<span class="cm"># ─── Build scan (visual analysis in browser) ───</span>
+<span class="ck">./gradlew</span> build <span class="cs">–scan</span>
+
+<span class="cm"># ─── Unused dependency analysis (ca.cutterslade.analyze plugin) ───</span>
+<span class="cm"># Add to build.gradle: id(“ca.cutterslade.analyze”) version “1.9.0”</span>
+<span class="ck">./gradlew</span> analyzeClassesDependencies
+<span class="ck">./gradlew</span> analyzeTestClassesDependencies
+
+<span class="cm"># ─── List all dependencies with versions ───</span>
+<span class="ck">./gradlew</span> dependencies <span class="cs">–configuration runtimeClasspath</span> | grep <span class="cs">”---”</span></div>
+
+  </section>
+
+  <!-- GUIDE -->
+
+  <section class="content-section">
+    <div class="sec-head">
+      <span class="sec-label">Gradle dependency configurations guide</span>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="dense-block">
+      <p><strong>implementation vs api — the most important Gradle distinction</strong><br>
+      <code>implementation</code> — dependency is an internal implementation detail. Downstream consumers of your library cannot see this dependency's classes at compile time. Use for most dependencies: Spring Boot, Jackson, logging, database drivers. This enables Gradle's compile avoidance — downstream modules are NOT recompiled when this dependency changes internally. <code>api</code> — dependency is exposed in your public API. Use only when your public interfaces return types or take parameters from this dependency. Over-using <code>api</code> defeats compile avoidance and increases build times. When in doubt, use <code>implementation</code>.</p>
+      <p><strong>Deprecated configurations to avoid</strong><br>
+      <code>compile</code> — deprecated since Gradle 3.4, removed in Gradle 7. Replace with <code>implementation</code>. <code>testCompile</code> — replace with <code>testImplementation</code>. <code>provided</code> — replace with <code>compileOnly</code>. <code>runtime</code> — replace with <code>runtimeOnly</code>. <code>testRuntime</code> — replace with <code>testRuntimeOnly</code>. Using deprecated configs causes build warnings and will break when upgrading Gradle major versions. Run <code>./gradlew dependencies</code> to see your resolved dependency tree.</p>
+      <p><strong>SNAPSHOT dependencies in production builds</strong><br>
+      SNAPSHOT versions (e.g., <code>1.0.0-SNAPSHOT</code>) are mutable — the same version string can resolve to different artifacts on different builds. This makes builds non-reproducible. Avoid SNAPSHOT dependencies in production code. Use fixed release versions. In development, pin to a specific SNAPSHOT build number if you need a pre-release. Gradle caches SNAPSHOT dependencies for 24 hours by default — use <code>--refresh-dependencies</code> to force refresh.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+
+  <section class="content-section">
+    <div class="sec-head">
+      <span class="sec-label">FAQ — Analyze Gradle</span>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I analyze Gradle dependencies?<span class="faq-arrow">&#9660;</span></button>
+        <div class="faq-a"><code>./gradlew dependencies</code> — full dependency tree with resolved versions. <code>./gradlew dependencies --configuration runtimeClasspath</code> — specific configuration. <code>./gradlew dependencyInsight --dependency guava</code> — why a specific artifact is included. <code>./gradlew build --scan</code> — visual Build Scan in browser (requires Gradle Enterprise). <strong>ca.cutterslade.analyze plugin</strong> — detects unused and undeclared dependencies. This online tool parses your build.gradle for common issues without requiring Gradle to run.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What is the difference between api and implementation in Gradle?<span class="faq-arrow">&#9660;</span></button>
+        <div class="faq-a"><code>implementation</code> — internal dependency, not visible to consumers of your library. Enables compile avoidance. Use for ~90% of dependencies. <code>api</code> — exposed in your public API, visible to consumers at compile time. Use only when public methods return or accept types from this dependency. Using <code>api</code> instead of <code>implementation</code> causes unnecessary recompilation of downstream modules — this is a common performance problem in large multi-module builds.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I find dependency conflicts in Gradle?<span class="faq-arrow">&#9660;</span></button>
+        <div class="faq-a">Run <code>./gradlew dependencies --configuration runtimeClasspath</code> — look for lines showing version conflicts: <code>com.google.guava:guava:20.0 -> 32.1.3-jre (*)</code> means the version was upgraded by Gradle's conflict resolution. <code>(*)</code> means a conflict was resolved. To see details: <code>./gradlew dependencyInsight --dependency guava</code>. To enforce a version: add to <code>configurations.all { resolutionStrategy { force 'com.google.guava:guava:32.1.3-jre' } }</code>.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do I speed up a Gradle build?<span class="faq-arrow">&#9660;</span></button>
+        <div class="faq-a">Key optimizations: (1) Enable build cache: <code>org.gradle.caching=true</code> in gradle.properties. (2) Enable configuration cache: <code>org.gradle.configuration-cache=true</code>. (3) Enable parallel execution: <code>org.gradle.parallel=true</code>. (4) Use <code>implementation</code> instead of <code>api</code> to enable compile avoidance. (5) Run <code>./gradlew build --scan</code> to identify slow tasks. (6) Use <code>./gradlew assembleDebug</code> instead of <code>./gradlew build</code> for Android. (7) Increase heap: <code>org.gradle.jvmargs=-Xmx4g</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <div class="sec-head">
+      <span class="sec-label">Java build tools</span>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="subtools-grid">
+      <a href="java_gradle_build_visualizer/" class="stl"><p class="stl-eye">gradle //</p><span class="stl-name">Gradle Build Visualizer</span></a>
+      <a href="java_maven_dependency_analyzer/" class="stl"><p class="stl-eye">maven //</p><span class="stl-name">Maven Dependency Analyzer</span></a>
+      <a href="java_dependency_conflict_checker/" class="stl"><p class="stl-eye">conflict //</p><span class="stl-name">Dependency Conflict Checker</span></a>
+      <a href="java_build_time_profiler/" class="stl"><p class="stl-eye">perf //</p><span class="stl-name">Build Time Profiler</span></a>
+      <a href="java_jar_size_analyzer/" class="stl"><p class="stl-eye">jar //</p><span class="stl-name">JAR Size Analyzer</span></a>
+    </div>
+  </section>
+
+  <div class="tag-cloud">
+    <span class="tag">analyze gradle</span>
+    <span class="tag">gradle analyzer</span>
+    <span class="tag">gradle dependency analyzer</span>
+    <span class="tag">build.gradle analyzer</span>
+    <span class="tag">gradle dependency checker</span>
+    <span class="tag">gradle api vs implementation</span>
+    <span class="tag">gradle deprecated compile</span>
+    <span class="tag">gradle build scan</span>
+    <span class="tag">gradle dependencyInsight</span>
+    <span class="tag">gradle dependency tree</span>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <p>analyze-gradle &middot; build.gradle parser &middot; dependency checker &middot; free</p>
+    <p>implementation vs api &middot; snapshot detection &middot; github pages</p>
+  </div>
+</footer>
+
+<script>
+// ─── GRADLE RULES ───
+var RULES = [
+  {
+    level: 'error',
+    title: 'Deprecated "compile" configuration used',
+    check: function(src) {
+      var found = src.match(/^\s*compile\s+['"]/mg);
+      if (found && found.length > 0) {
+        return found.length + ' "compile" dependency declaration(s) found. Replace with "implementation". "compile" was deprecated in Gradle 3.4 and removed in Gradle 7.';
+      }
+      return null;
+    }
+  },
+  {
+    level: 'error',
+    title: 'Deprecated "testCompile" configuration used',
+    check: function(src) {
+      if (/^\s*testCompile\s+['"]/m.test(src)) {
+        return '"testCompile" is deprecated. Replace with "testImplementation".';
+      }
+      return null;
+    }
+  },
+  {
+    level: 'error',
+    title: 'Deprecated "runtime" configuration used',
+    check: function(src) {
+      if (/^\s*runtime\s+['"]/m.test(src)) {
+        return '"runtime" is deprecated. Replace with "runtimeOnly".';
+      }
+      return null;
+    }
+  },
+  {
+    level: 'warning',
+    title: 'SNAPSHOT dependencies detected',
+    check: function(src) {
+      var snaps = src.match(/['"]([\w.\-]+:[\w.\-]+:\d[\w.\-]*-SNAPSHOT)['"]/g);
+      if (snaps && snaps.length > 0) {
+        return snaps.length + ' SNAPSHOT dependency(ies): ' + snaps.slice(0, 3).join(', ') + '. SNAPSHOTs are mutable — builds are non-reproducible. Use fixed release versions in production.';
+      }
+      return null;
+    }
+  },
+  {
+    level: 'warning',
+    title: 'Overuse of "api" configuration',
+    check: function(src) {
+      var apiCount  = (src.match(/^\s*api\s+['"]/mg) || []).length;
+      var implCount = (src.match(/^\s*implementation\s+['"]/mg) || []).length;
+      if (apiCount > 0 && apiCount > implCount) {
+        return apiCount + ' "api" vs ' + implCount + ' "implementation" declarations. Over-using "api" increases compile time for downstream modules. Use "implementation" unless the dependency is part of your public API surface.';
+      }
+      return null;
+    }
+  },
+  {
+    level: 'warning',
+    title: 'Dynamic "+" versions detected',
+    check: function(src) {
+      var dyn = src.match(/['"]([\w.\-]+:[\w.\-]+:\d[\w.]*\+)['"]/g);
+      if (dyn && dyn.length > 0) {
+        return dyn.length + ' dynamic version(s) with "+": ' + dyn.slice(0, 2).join(', ') + '. Dynamic versions reduce reproducibility and can break builds. Pin to exact versions.';
+      }
+      return null;
+    }
+  },
+  {
+    level: 'info',
+    title: 'Kotlin DSL (.kts) style detected',
+    check: function(src) {
+      if (/implementation\s*\(/.test(src) && /plugins\s*\{/.test(src)) {
+        return 'Kotlin DSL syntax detected (build.gradle.kts). Ensure Kotlin DSL-specific features like type-safe project accessors are used for best IDE support.';
+      }
+      return null;
+    }
+  },
+  {
+    level: 'info',
+    title: 'No build cache configuration found',
+    check: function(src) {
+      if (!/gradle\.caching|buildCache|org\.gradle\.caching/.test(src)) {
+        return 'No build cache configuration detected in this file. Enable in gradle.properties: org.gradle.caching=true for significant build time improvement on incremental builds.';
+      }
+      return null;
+    }
+  },
+  {
+    level: 'info',
+    title: 'No parallel build configuration found',
+    check: function(src) {
+      if (!/gradle\.parallel|maxParallelForks/.test(src)) {
+        return 'No parallel configuration found. For multi-module builds, enable in gradle.properties: org.gradle.parallel=true. For test parallelism: test { maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) }.';
+      }
+      return null;
+    }
+  }
+];
+
+// ─── DEP PARSER ───
+var KNOWN_CONFIGS = ['implementation', 'api', 'testImplementation', 'testApi', 'compileOnly', 'testCompileOnly', 'runtimeOnly', 'testRuntimeOnly', 'annotationProcessor', 'kapt', 'ksp', 'compile', 'testCompile', 'runtime'];
+
+function parseDependencies(src) {
+  var deps = {};
+  var depRegex = /^\s*(implementation|api|testImplementation|testApi|compileOnly|testCompileOnly|runtimeOnly|testRuntimeOnly|annotationProcessor|kapt|ksp|compile|testCompile|runtime)\s*[\(]?\s*["']([^"']+)["']/mg;
+  var match;
+  while ((match = depRegex.exec(src)) !== null) {
+    var config = match[1];
+    var coord   = match[2];
+    if (!deps[config]) deps[config] = [];
+    var parts = coord.split(':');
+    deps[config].push({
+      group:    parts[0] || '',
+      artifact: parts[1] || coord,
+      version:  parts[2] || '',
+      snap:     coord.indexOf('SNAPSHOT') !== -1,
+      dynamic:  /\+$/.test(coord)
+    });
+  }
+  return deps;
+}
+
+// ─── DOM HELPERS ───
+function el(tag, cls) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  return e;
+}
+
+function makeFinding(level, title, body) {
+  var lm = { error: 'f-error', warning: 'f-warning', info: 'f-info', pass: 'f-pass' };
+  var bm = { error: 'fb-error', warning: 'fb-warning', info: 'fb-info', pass: 'fb-pass' };
+  var ll = { error: 'ERROR', warning: 'WARNING', info: 'INFO', pass: 'PASS' };
+  var card = el('div', 'finding ' + (lm[level] || 'f-info'));
+  var head = el('div', 'f-head');
+  head.appendChild(Object.assign(el('span', 'f-badge ' + (bm[level] || 'fb-info')), { textContent: ll[level] || 'INFO' }));
+  head.appendChild(Object.assign(el('span', 'f-title'), { textContent: title }));
+  card.appendChild(head);
+  if (body) card.appendChild(Object.assign(el('div', 'f-body'), { textContent: body }));
+  return card;
+}
+
+function runAnalysis() {
+  var src    = document.getElementById('gradleInput').value;
+  var status = document.getElementById('statusMsg');
+
+  if (!src.trim()) {
+    status.textContent = 'Paste build.gradle first.';
+    return;
+  }
+
+  // Run rules
+  var findings = [];
+  RULES.forEach(function(rule) {
+    var result = rule.check(src);
+    if (result) findings.push({ level: rule.level, title: rule.title, body: result });
+  });
+
+  // Parse dependencies
+  var deps = parseDependencies(src);
+  var totalDeps = 0;
+  var snapCount = 0;
+  Object.keys(deps).forEach(function(k) {
+    totalDeps += deps[k].length;
+    deps[k].forEach(function(d) { if (d.snap) snapCount++; });
+  });
+
+  var errors   = findings.filter(function(f) { return f.level === 'error'; }).length;
+  var warnings = findings.filter(function(f) { return f.level === 'warning'; }).length;
+
+  var pane = document.getElementById('resultsPane');
+  pane.innerHTML = '';
+
+  // Summary chips
+  var chips = el('div', 'sum-row');
+  function makeChip(val, lbl, color) {
+    var c = el('div', 'sum-chip');
+    var n = Object.assign(el('span', 'sc-val'), { textContent: String(val) });
+    n.style.color = color;
+    var l = Object.assign(el('span', 'sc-lbl'), { textContent: lbl });
+    c.appendChild(n); c.appendChild(l);
+    return c;
+  }
+  chips.appendChild(makeChip(totalDeps, 'Deps',     'var(--gr)'));
+  chips.appendChild(makeChip(errors,    'Errors',   'var(--red)'));
+  chips.appendChild(makeChip(warnings,  'Warnings', 'var(--yellow)'));
+  chips.appendChild(makeChip(snapCount, 'Snapshots','var(--yellow)'));
+  pane.appendChild(chips);
+
+  // Findings
+  if (findings.length === 0) {
+    pane.appendChild(makeFinding('pass', 'No common issues detected', 'build.gradle passes all pattern-based checks. For deeper analysis run: ./gradlew dependencies'));
+  } else {
+    findings.forEach(function(f) { pane.appendChild(makeFinding(f.level, f.title, f.body)); });
+  }
+
+  // Dependency groups
+  if (totalDeps > 0) {
+    var sep = el('div');
+    sep.style.cssText = 'font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--gr);opacity:0.7;margin:12px 0 8px;';
+    sep.textContent = 'Dependencies by configuration';
+    pane.appendChild(sep);
+
+    var configOrder = ['implementation', 'api', 'testImplementation', 'compileOnly', 'runtimeOnly', 'annotationProcessor', 'kapt', 'ksp'];
+    var allConfigs  = configOrder.filter(function(c) { return deps[c]; })
+                        .concat(Object.keys(deps).filter(function(c) { return configOrder.indexOf(c) === -1; }));
+
+    allConfigs.forEach(function(config) {
+      var group = el('div', 'dep-group');
+      var head = el('div', 'dg-head');
+      head.textContent = config + ' (' + deps[config].length + ')';
+      group.appendChild(head);
+      deps[config].forEach(function(dep) {
+        var row = el('div', 'dep-item');
+        var gn  = Object.assign(el('span', 'dep-group-name'), { textContent: dep.group });
+        var art = Object.assign(el('span', 'dep-artifact'), { textContent: dep.artifact });
+        var ver = Object.assign(el('span', dep.snap ? 'dep-version dep-snap' : dep.dynamic ? 'dep-version dep-latest' : 'dep-version'), { textContent: dep.version });
+        row.appendChild(gn); row.appendChild(art); row.appendChild(ver);
+        group.appendChild(row);
+      });
+      pane.appendChild(group);
+    });
+  }
+
+  status.textContent = totalDeps + ' dep(s) found. ' + errors + ' error(s), ' + warnings + ' warning(s).';
+  status.style.color = errors > 0 ? 'var(--red)' : warnings > 0 ? 'var(--yellow)' : 'var(--gr)';
+}
+
+function loadSample() {
+  var sample = [
+    'plugins {',
+    '    id("java-library")',
+    '    id("org.springframework.boot") version "3.2.0"',
+    '}',
+    '',
+    'repositories {',
+    '    mavenCentral()',
+    '}',
+    '',
+    'dependencies {',
+    '    // Correct: implementation for internal dependencies',
+    '    implementation("org.springframework.boot:spring-boot-starter-web:3.2.0")',
+    '    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.2.0")',
+    '',
+    '    // Warning: should be implementation, not api',
+    '    api("com.fasterxml.jackson.core:jackson-databind:2.16.0")',
+    '    api("org.slf4j:slf4j-api:2.0.9")',
+    '',
+    '    // Error: deprecated "compile" config',
+    '    compile("com.google.guava:guava:32.1.3-jre")',
+    '',
+    '    // Warning: SNAPSHOT in production',
+    '    implementation("com.example:internal-lib:1.5.0-SNAPSHOT")',
+    '',
+    '    // Warning: dynamic version',
+    '    implementation("org.apache.commons:commons-lang3:3.+")',
+    '',
+    '    compileOnly("org.projectlombok:lombok:1.18.30")',
+    '    annotationProcessor("org.projectlombok:lombok:1.18.30")',
+    '',
+    '    testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.0")',
+    '    testCompile("junit:junit:4.13.2")',
+    '}'
+  ].join('\n');
+
+  document.getElementById('gradleInput').value = sample;
+  updateLineCount();
+  runAnalysis();
+}
+
+function clearAll() {
+  document.getElementById('gradleInput').value = '';
+  document.getElementById('lineCount').textContent = '0 lines';
+  document.getElementById('statusMsg').textContent = '';
+  var pane = document.getElementById('resultsPane');
+  pane.innerHTML = '';
+  var idle = el('div', 'idle-msg');
+  var icon = Object.assign(el('span'), { textContent: '\u25c7' });
+  icon.style.cssText = 'font-size:28px;opacity:0.1;';
+  var hint = Object.assign(el('span'), { textContent: 'Paste build.gradle and click\nAnalyze Gradle Build' });
+  idle.appendChild(icon); idle.appendChild(hint);
+  pane.appendChild(idle);
+}
+
+function updateLineCount() {
+  var v = document.getElementById('gradleInput').value;
+  document.getElementById('lineCount').textContent = (v ? v.split('\n').length : 0) + ' lines';
+}
+
+function toggleFaq(btn) {
+  btn.parentElement.classList.toggle('open');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('gradleInput').placeholder = 'Paste build.gradle or build.gradle.kts here...';
+  document.getElementById('analyzeBtn').addEventListener('click', runAnalysis);
+  document.getElementById('sampleBtn').addEventListener('click', loadSample);
+  document.getElementById('clearBtn').addEventListener('click', clearAll);
+  document.getElementById('clearBtn2').addEventListener('click', clearAll);
+  document.getElementById('gradleInput').addEventListener('input', updateLineCount);
+});
+</script>
 
 </body>
 </html>
